@@ -21,9 +21,9 @@ dotenv.config();
 const app = express();
 app.use(cookieParser());
 const corsOptions = {
-  origin: "https://cayxanhanphat.vercel.app", 
-  credentials: true, 
-  methods: "GET,POST,PUT,DELETE", 
+  origin: ["https://cayxanhanphat.vercel.app", "http://localhost:5173"],
+  credentials: true,
+  methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };
 app.use(cors(corsOptions));
