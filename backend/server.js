@@ -25,17 +25,17 @@ const corsOptions = {
     "https://cayxanhanphat.vercel.app",
     "http://localhost:5173",
     "https://cayxanhanphat.com",
+    "https://www.cayxanhanphat.com",
   ],
   credentials: true,
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };
 app.use(cors(corsOptions));
-app.use(express.json()); 
+app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 app.use("/assets", express.static(path.join(__dirname, "../backend/assets")));
 app.use("/api/blogs", blogRoutes);
