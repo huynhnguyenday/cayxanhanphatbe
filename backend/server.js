@@ -37,7 +37,7 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use("/assets", express.static(path.join(__dirname, "../assets")));
+app.use("/assets", express.static(path.join(__dirname, "../backend/assets")));
 app.use("/api/blogs", blogRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
