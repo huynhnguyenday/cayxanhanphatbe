@@ -1,8 +1,21 @@
 import multer from "multer";
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Đảm bảo thư mục assets tồn tại
+const assetsDir = path.join(__dirname, "../assets");
+if (!fs.existsSync(assetsDir)) {
+  fs.mkdirSync(assetsDir, { recursive: true });
+}
+
 // Cấu hình Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "backend/assets/");
+    cb(null, assetsDir);
   },
   filename: (req, file, cb) => {
     const originalName = file.originalname;

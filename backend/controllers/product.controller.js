@@ -30,6 +30,11 @@ export const getProduct = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
+  console.log("=== CREATE PRODUCT REQUEST ===");
+  console.log("Body:", req.body);
+  console.log("File:", req.file);
+  console.log("Content-Type:", req.headers["content-type"]);
+
   const product = req.body;
 
   if (!product.name)

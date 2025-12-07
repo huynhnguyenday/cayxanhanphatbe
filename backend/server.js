@@ -29,7 +29,7 @@ const corsOptions = {
   ],
   credentials: true,
   methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: "Content-Type,Authorization",
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -37,7 +37,7 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use("/assets", express.static(path.join(__dirname, "../backend/assets")));
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 app.use("/api/blogs", blogRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
@@ -49,6 +49,15 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/newsletters", newsletterRoutes);
 app.use("/api/vnpay", vnpayRoutes);
+
+// Error handling middleware (phải đặt cuối cùng)
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Server Error",
+  });
+});
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
