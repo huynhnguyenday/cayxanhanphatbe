@@ -7,7 +7,7 @@ export const getBlogs = async (req, res) => {
 
     const blogsWithFullImagePath = blogs.map((blog) => ({
       ...blog.toObject(),
-      image: `https://cayxanhanphatbe-production.up.railway.app/assets/${blog.image}`,
+      image: `https://cayxanhanphatbe.onrender.com/assets/${blog.image}`,
     }));
 
     res.status(200).json({
@@ -42,7 +42,7 @@ export const getBlogById = async (req, res) => {
     // Thêm đường dẫn đầy đủ cho ảnh
     const blogWithFullImagePath = {
       ...blog.toObject(),
-      image: `https://cayxanhanphatbe-production.up.railway.app/assets/${blog.image}`,
+      image: `https://cayxanhanphatbe.onrender.com/assets/${blog.image}`,
     };
 
     res.status(200).json({
@@ -86,7 +86,7 @@ export const createBlog = async (req, res) => {
     await newBlog.save();
     const blogWithImage = {
       ...newBlog.toObject(),
-      image: `https://cayxanhanphatbe-production.up.railway.app/assets/${newBlog.image}`,
+      image: `https://cayxanhanphatbe.onrender.com/assets/${newBlog.image}`,
     };
 
     res.status(201).json({
@@ -132,7 +132,7 @@ export const updateBlog = async (req, res) => {
       data: {
         ...updatedBlog.toObject(),
         image: updatedBlog.image
-          ? `https://cayxanhanphatbe-production.up.railway.app/assets/${updatedBlog.image}`
+          ? `https://cayxanhanphatbe.onrender.com/assets/${updatedBlog.image}`
           : null,
       },
     });
@@ -180,7 +180,7 @@ export const getHotBlogs = async (req, res) => {
     // Thêm đường dẫn đầy đủ cho ảnh
     const blogsWithFullImagePath = hotBlogs.map((blog) => ({
       ...blog.toObject(),
-      image: `https://cayxanhanphatbe-production.up.railway.app/assets/${blog.image}`,
+      image: `https://cayxanhanphatbe.onrender.com/assets/${blog.image}`,
     }));
 
     res.status(200).json({
@@ -201,7 +201,7 @@ export const getBannerBlogs = async (req, res) => {
     // Chỉ lấy image và title, đồng thời thêm đường dẫn đầy đủ cho ảnh
     const bannerBlogsWithImagePath = bannerBlogs.map((blog) => ({
       _id: blog._id,
-      image: `https://cayxanhanphatbe-production.up.railway.app/assets/${blog.image}`,
+      image: `https://cayxanhanphatbe.onrender.com/assets/${blog.image}`,
       title: blog.title,
     }));
 
