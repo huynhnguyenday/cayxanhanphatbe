@@ -71,14 +71,17 @@ app.use((err, req, res, next) => {
 });
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
-  connectDB();
+app.listen(port, async () => {
+  await connectDB();
   console.log(`Server started on port ${port}...`);
 
-  // Bắt đầu keep-alive service
+  // Bắt đầu keep-alive service sau khi server và DB đã sẵn sàng
   // Chạy nếu có RENDER_EXTERNAL_URL (Render tự động set) hoặc BE_URL được cấu hình
   if (process.env.RENDER_EXTERNAL_URL || process.env.BE_URL) {
-    startKeepAlive();
+    // Đợi 5 giây để đảm bảo server hoàn toàn sẵn sàng
+    setTimeout(() => {
+      startKeepAlive();
+    }, 5000);
   } else {
     console.log(
       "⚠️  Keep-alive disabled (no BE_URL or RENDER_EXTERNAL_URL found)"

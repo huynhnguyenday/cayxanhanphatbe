@@ -21,10 +21,11 @@ export const startKeepAlive = () => {
   console.log(`🏥 Health check: ${healthCheckUrl}`);
   console.log(`⏰ Ping interval: 14 minutes`);
 
-  // Ping ngay khi khởi động (sau 1 giây để server sẵn sàng)
+  // Ping sau 10 giây để đảm bảo server hoàn toàn sẵn sàng
   setTimeout(() => {
+    console.log(`🔍 Starting first keep-alive ping...`);
     pingServer(healthCheckUrl);
-  }, 1000);
+  }, 10000);
 
   // Ping mỗi 14 phút (840000ms) - trước khi Render timeout 30 phút
   const intervalTime = 14 * 60 * 1000; // 14 phút
@@ -38,18 +39,41 @@ export const startKeepAlive = () => {
 };
 
 /**
- * Hàm ping server
+ * Hàm ping server với retry logic
  */
-const pingServer = async (url) => {
-  try {
-    const response = await axios.get(url, {
-      timeout: 5000, // Timeout 5 giây
-    });
-    console.log(
-      `✅ Keep-alive ping successful: ${new Date().toLocaleString()}`
-    );
-  } catch (error) {
-    console.error(`❌ Keep-alive ping failed: ${error.message}`);
-    // Không throw error để không làm crash server
+const pingServer = async (url, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await axios.get(url, {
+        timeout: 10000, // Timeout 10 giây
+        validateStatus: (status) => status < 500, // Chấp nhận status < 500
+      });
+      
+      if (response.status === 200) {
+        console.log(
+          `✅ Keep-alive ping successful: ${new Date().toLocaleString()}`
+        );
+        return; // Thành công, thoát khỏi hàm
+      } else {
+        console.warn(
+          `⚠️  Keep-alive ping returned status ${response.status}, retrying...`
+        );
+      }
+    } catch (error) {
+      const errorMsg = error.response 
+        ? `Status ${error.response.status}: ${error.response.statusText}`
+        : error.message;
+      
+      if (i < retries - 1) {
+        console.warn(
+          `⚠️  Keep-alive ping attempt ${i + 1}/${retries} failed: ${errorMsg}, retrying in 2s...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Đợi 2 giây trước khi retry
+      } else {
+        console.error(
+          `❌ Keep-alive ping failed after ${retries} attempts: ${errorMsg}`
+        );
+      }
+    }
   }
 };
