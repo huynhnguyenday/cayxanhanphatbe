@@ -16,6 +16,8 @@ import { fileURLToPath } from "url";
 import path from "path";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import { startKeepAlive } from "./utils/keepAlive.js";
+
 dotenv.config();
 
 const app = express();
@@ -50,6 +52,15 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/newsletters", newsletterRoutes);
 app.use("/api/vnpay", vnpayRoutes);
 
+// Health check endpoint để keep-alive
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is alive",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Error handling middleware (phải đặt cuối cùng)
 app.use((err, req, res, next) => {
   console.error("Error:", err);
@@ -63,4 +74,15 @@ const port = process.env.PORT || 5000;
 app.listen(port, () => {
   connectDB();
   console.log(`Server started on port ${port}...`);
+
+  // Bắt đầu keep-alive service
+  // Chạy nếu có RENDER_EXTERNAL_URL (Render tự động set) hoặc BE_URL được cấu hình
+  if (process.env.RENDER_EXTERNAL_URL || process.env.BE_URL) {
+    startKeepAlive();
+  } else {
+    console.log(
+      "⚠️  Keep-alive disabled (no BE_URL or RENDER_EXTERNAL_URL found)"
+    );
+    console.log("💡 Set BE_URL environment variable to enable keep-alive");
+  }
 });
