@@ -1,13 +1,15 @@
 import Blog from "../models/blog.model.js";
 import mongoose from "mongoose";
+import { getCloudinaryUrl } from "../middleware/cloudinary.js";
 
 export const getBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find();
 
+    // Image đã là URL Cloudinary, không cần thêm prefix
     const blogsWithFullImagePath = blogs.map((blog) => ({
       ...blog.toObject(),
-      image: `https://cayxanhanphatbe.onrender.com/assets/${blog.image}`,
+      image: blog.image, // URL Cloudinary đã đầy đủ
     }));
 
     res.status(200).json({
@@ -39,10 +41,10 @@ export const getBlogById = async (req, res) => {
         .json({ success: false, message: "Blog not found" });
     }
 
-    // Thêm đường dẫn đầy đủ cho ảnh
+    // URL Cloudinary đã đầy đủ
     const blogWithFullImagePath = {
       ...blog.toObject(),
-      image: `https://cayxanhanphatbe.onrender.com/assets/${blog.image}`,
+      image: blog.image, // URL Cloudinary đã đầy đủ
     };
 
     res.status(200).json({
@@ -73,10 +75,18 @@ export const createBlog = async (req, res) => {
         .json({ success: false, message: "Image is required" });
     }
 
-    const imagePath = req.file.filename;
+    // Lấy URL từ Cloudinary
+    const imageUrl = getCloudinaryUrl(req.file);
+
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "Lỗi khi upload ảnh lên Cloudinary",
+      });
+    }
 
     const newBlog = new Blog({
-      image: imagePath,
+      image: imageUrl, // Lưu URL Cloudinary
       title,
       content,
       displayHot,
@@ -86,7 +96,7 @@ export const createBlog = async (req, res) => {
     await newBlog.save();
     const blogWithImage = {
       ...newBlog.toObject(),
-      image: `https://cayxanhanphatbe.onrender.com/assets/${newBlog.image}`,
+      image: newBlog.image, // URL Cloudinary đã đầy đủ
     };
 
     res.status(201).json({
@@ -116,14 +126,22 @@ export const updateBlog = async (req, res) => {
         .json({ success: false, message: "Blog not found" });
     }
 
-    let updatedImagePath = existingBlog.image;
+    let updatedImageUrl = existingBlog.image;
     if (req.file) {
-      updatedImagePath = req.file.filename;
+      // Lấy URL từ Cloudinary
+      const imageUrl = getCloudinaryUrl(req.file);
+      if (!imageUrl) {
+        return res.status(400).json({
+          success: false,
+          message: "Lỗi khi upload ảnh lên Cloudinary",
+        });
+      }
+      updatedImageUrl = imageUrl;
     }
 
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,
-      { title, content, image: updatedImagePath, displayHot, displayBanner },
+      { title, content, image: updatedImageUrl, displayHot, displayBanner },
       { new: true }
     );
 
@@ -131,9 +149,7 @@ export const updateBlog = async (req, res) => {
       success: true,
       data: {
         ...updatedBlog.toObject(),
-        image: updatedBlog.image
-          ? `https://cayxanhanphatbe.onrender.com/assets/${updatedBlog.image}`
-          : null,
+        image: updatedBlog.image || null, // URL Cloudinary đã đầy đủ
       },
     });
   } catch (error) {
@@ -177,10 +193,10 @@ export const getHotBlogs = async (req, res) => {
     // Lấy tối đa 3 bài viết có displayHot: 1
     const hotBlogs = await Blog.find({ displayHot: 1 }).sort({ updatedAt: -1 });
 
-    // Thêm đường dẫn đầy đủ cho ảnh
+    // Image đã là URL Cloudinary, không cần thêm prefix
     const blogsWithFullImagePath = hotBlogs.map((blog) => ({
       ...blog.toObject(),
-      image: `https://cayxanhanphatbe.onrender.com/assets/${blog.image}`,
+      image: blog.image, // URL Cloudinary đã đầy đủ
     }));
 
     res.status(200).json({
@@ -198,10 +214,10 @@ export const getBannerBlogs = async (req, res) => {
     // Lấy các bài blog có displayBanner: 1
     const bannerBlogs = await Blog.find({ displayBanner: 1 });
 
-    // Chỉ lấy image và title, đồng thời thêm đường dẫn đầy đủ cho ảnh
+    // Image đã là URL Cloudinary, không cần thêm prefix
     const bannerBlogsWithImagePath = bannerBlogs.map((blog) => ({
       _id: blog._id,
-      image: `https://cayxanhanphatbe.onrender.com/assets/${blog.image}`,
+      image: blog.image, // URL Cloudinary đã đầy đủ
       title: blog.title,
     }));
 

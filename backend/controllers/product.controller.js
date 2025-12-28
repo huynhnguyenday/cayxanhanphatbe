@@ -1,6 +1,7 @@
 import Product from "../models/product.model.js";
 import mongoose from "mongoose";
 import Category from "../models/category.model.js";
+import { getCloudinaryUrl } from "../middleware/cloudinary.js";
 export const getProduct = async (req, res) => {
   const { searchTerm } = req.query; // Get search term from query parameters
 
@@ -10,9 +11,10 @@ export const getProduct = async (req, res) => {
       name: new RegExp(searchTerm, "i"), // 'i' for case-insensitive
     }).populate("category", "name");
 
+    // Image đã là URL Cloudinary, không cần thêm prefix
     const productsWithFullImagePath = products.map((product) => ({
       ...product.toObject(),
-      image: `https://cayxanhanphatbe.onrender.com/assets/${product.image}`,
+      image: product.image, // URL Cloudinary đã đầy đủ
     }));
 
     // Return filtered products based on search term
@@ -85,11 +87,19 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    const imagePath = req.file.filename;
+    // Lấy URL từ Cloudinary
+    const imageUrl = getCloudinaryUrl(req.file);
+
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "Lỗi khi upload ảnh lên Cloudinary",
+      });
+    }
 
     const newProduct = new Product({
       ...product,
-      image: imagePath,
+      image: imageUrl, // Lưu URL Cloudinary
     });
 
     await newProduct.save();
@@ -99,7 +109,7 @@ export const createProduct = async (req, res) => {
     );
     const productWithFullImagePath = {
       ...populatedProduct.toObject(),
-      image: `https://cayxanhanphatbe.onrender.com/assets/${populatedProduct.image}`,
+      image: populatedProduct.image, // URL Cloudinary đã đầy đủ
     };
     res.status(201).json({ success: true, data: productWithFullImagePath });
   } catch (error) {
@@ -152,24 +162,30 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    let updatedImagePath = currentProduct.image; // Giữ ảnh cũ nếu không có ảnh mới
+    let updatedImageUrl = currentProduct.image; // Giữ ảnh cũ nếu không có ảnh mới
     if (req.file) {
-      updatedImagePath = req.file.filename; // Cập nhật ảnh mới nếu có
+      // Lấy URL từ Cloudinary
+      const imageUrl = getCloudinaryUrl(req.file);
+      if (!imageUrl) {
+        return res.status(400).json({
+          success: false,
+          message: "Lỗi khi upload ảnh lên Cloudinary",
+        });
+      }
+      updatedImageUrl = imageUrl; // Cập nhật ảnh mới nếu có
     }
 
     // Cập nhật sản phẩm
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      { ...product, image: updatedImagePath },
+      { ...product, image: updatedImageUrl },
       { new: true }
     ).populate("category", "name");
 
-    // Xử lý đường dẫn ảnh đầy đủ
+    // URL Cloudinary đã đầy đủ
     const productWithFullImagePath = {
       ...updatedProduct.toObject(),
-      image: updatedProduct.image
-        ? `https://cayxanhanphatbe.onrender.com/assets/${updatedProduct.image}`
-        : null,
+      image: updatedProduct.image || null,
     };
 
     res.status(200).json({ success: true, data: productWithFullImagePath });
@@ -224,9 +240,10 @@ export const getRelatedProducts = async (req, res) => {
       _id: { $ne: product._id },
     });
 
+    // Image đã là URL Cloudinary, không cần thêm prefix
     const productsWithFullImagePath = relatedProducts.map((relatedProduct) => ({
       ...relatedProduct.toObject(),
-      image: `https://cayxanhanphatbe.onrender.com/assets/${relatedProduct.image}`,
+      image: relatedProduct.image, // URL Cloudinary đã đầy đủ
     }));
 
     res.status(200).json({
