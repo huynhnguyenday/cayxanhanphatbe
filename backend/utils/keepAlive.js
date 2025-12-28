@@ -21,11 +21,9 @@ export const startKeepAlive = () => {
   console.log(`🏥 Health check: ${healthCheckUrl}`);
   console.log(`⏰ Ping interval: 14 minutes`);
 
-  // Ping sau 10 giây để đảm bảo server hoàn toàn sẵn sàng
-  setTimeout(() => {
-    console.log(`🔍 Starting first keep-alive ping...`);
-    pingServer(healthCheckUrl);
-  }, 10000);
+  // Ping ngay lập tức (đã đợi đủ thời gian ở server.js)
+  console.log(`🔍 Starting first keep-alive ping...`);
+  pingServer(healthCheckUrl);
 
   // Ping mỗi 14 phút (840000ms) - trước khi Render timeout 30 phút
   const intervalTime = 14 * 60 * 1000; // 14 phút

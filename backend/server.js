@@ -78,10 +78,12 @@ app.listen(port, async () => {
   // Bắt đầu keep-alive service sau khi server và DB đã sẵn sàng
   // Chạy nếu có RENDER_EXTERNAL_URL (Render tự động set) hoặc BE_URL được cấu hình
   if (process.env.RENDER_EXTERNAL_URL || process.env.BE_URL) {
-    // Đợi 5 giây để đảm bảo server hoàn toàn sẵn sàng
+    // Đợi 30 giây để Render hoàn toàn route request đến service
+    // Render cần thời gian để setup routing sau khi service live
+    console.log("⏳ Waiting 30 seconds for Render to fully route requests...");
     setTimeout(() => {
       startKeepAlive();
-    }, 5000);
+    }, 30000);
   } else {
     console.log(
       "⚠️  Keep-alive disabled (no BE_URL or RENDER_EXTERNAL_URL found)"
